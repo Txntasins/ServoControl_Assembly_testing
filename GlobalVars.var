@@ -1,0 +1,50 @@
+(* ============================================================
+   GLOBAL VARIABLE DECLARATIONS
+   pCO5+ Large — Ammonia Suction Servo Control
+   Network: pLAN  |  Author: Tantasins  |  Rev: 2.8.3
+   ============================================================ *)
+
+VAR_GLOBAL
+
+  (* --- Analog Inputs ---------------------------------------- *)
+  rPressureRaw    : REAL;   (* AI1: 4-20mA pressure sensor, bar *)
+  rPressureBar    : REAL;   (* Scaled engineering value, bar     *)
+
+  (* --- pLAN Servo Drive I/O (node address 1) ---------------- *)
+  rServoPosFbk    : REAL;   (* Servo position feedback, 0.0-100.0 % *)
+  rServoPosCmd    : REAL;   (* Position command to drive, 0.0-100.0 % *)
+  bServoDriveFault: BOOL;   (* Drive fault bit from pLAN           *)
+  bServoEnabled   : BOOL;   (* Drive enable command               *)
+  bServoHomed     : BOOL;   (* Homing complete flag               *)
+
+  (* --- Digital Inputs --------------------------------------- *)
+  bEstopHW        : BOOL;   (* Hardware E-stop (NC contact)       *)
+  bNH3AlarmHW     : BOOL;   (* Ammonia gas detector (NC contact)  *)
+  bManualSel      : BOOL;   (* Manual/Auto selector switch        *)
+
+  (* --- Wireless HMI variables (pLAN or Carel pCOWeb) ------- *)
+  rManualPosCmdHMI: REAL;   (* Manual position setpoint from HMI  *)
+  bHMI_AutoReq    : BOOL;   (* HMI request: switch to auto        *)
+  bHMI_ManualReq  : BOOL;   (* HMI request: switch to manual      *)
+  bHMI_Reset      : BOOL;   (* Operator alarm reset               *)
+
+  (* --- PID Setpoints (editable from HMI) ------------------- *)
+  rPressureSP     : REAL := -0.8;  (* Suction pressure setpoint, bar *)
+  rPID_Kp         : REAL := 2.5;
+  rPID_Ki         : REAL := 0.4;
+  rPID_Kd         : REAL := 0.1;
+  rPID_OutMin     : REAL := 5.0;   (* Min valve open %, prevents slam shut *)
+  rPID_OutMax     : REAL := 95.0;  (* Max valve open %                     *)
+
+  (* --- Internal state --------------------------------------- *)
+  eCtrlMode       : INT  := 0;  (* 0=AUTO  1=MANUAL  2=SAFE_STOP *)
+  bAlarmActive    : BOOL;
+  bAlarmLatched   : BOOL;
+  sAlarmMsg       : STRING(40);
+  rPID_Error      : REAL;
+  rPID_Integral   : REAL;
+  rPID_PrevError  : REAL;
+  rPID_Output     : REAL;
+  tScanTime       : TIME  := T#500MS;   (* PID scan cycle  *)
+
+END_VAR
